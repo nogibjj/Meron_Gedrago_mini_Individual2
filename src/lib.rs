@@ -8,8 +8,6 @@ use reqwest::blocking::get; // for HTTP GET requests
 use std::fs; // for file system operations like creating directories and writing files
 use std::time::Instant;
 
-                   
-
 // Create a table
 pub fn create_table(conn: &Connection, table_name: &str) -> Result<()> {
     let create_query = format!(
@@ -163,10 +161,7 @@ pub fn do_all(
     query_exec(conn, &format!("SELECT * FROM {}", table_name))?;
 
     // Step 4: Insert a new row as a sample create operation
-    let insert_query = format!(
-        "INSERT INTO {} VALUES (2014, 11, 11, 1, 11);",
-        table_name
-    );
+    let insert_query = format!("INSERT INTO {} VALUES (2014, 11, 11, 1, 11);", table_name);
     conn.execute(&insert_query, [])?;
     println!("Sample row inserted into '{}'", table_name);
 
@@ -179,10 +174,7 @@ pub fn do_all(
     println!("Updated rows in '{}' where day_of_week = 1", table_name);
 
     // Step 6: Delete rows matching a specific condition
-    let delete_query = format!(
-        "DELETE FROM {} WHERE year = 2000;",
-        table_name
-    );
+    let delete_query = format!("DELETE FROM {} WHERE year = 2000;", table_name);
     conn.execute(&delete_query, [])?;
     println!("Deleted rows in '{}' where year = 2000", table_name);
     let elapsed = start.elapsed();
@@ -190,6 +182,3 @@ pub fn do_all(
 
     Ok(())
 }
-
-
-
