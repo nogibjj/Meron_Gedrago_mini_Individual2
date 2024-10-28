@@ -3,8 +3,6 @@ Extract a dataset from a URL, JSON or CSV formats tend to work well
 """
 
 import requests
-import os
-import sqlite3
 import sqlite3
 import csv
 import os
