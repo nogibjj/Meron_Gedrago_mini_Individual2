@@ -31,6 +31,6 @@ jobs:
       run: make test
     - name: pull repository
       run: git pull
-    # - name: add rust logs
-    #   run: make generate_and_push
+    - name: add rust logs
+      run: make generate_and_push
     
