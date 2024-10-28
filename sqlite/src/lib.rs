@@ -4,6 +4,12 @@ use std::error::Error;
 use std::fs::File; //for loading csv //for capturing errors from loading
                    // Here we will have a function for each of the commands
 
+use reqwest::blocking::get; // for HTTP GET requests
+use std::fs; // for file system operations like creating directories and writing files
+use std::time::Instant;
+
+                   
+
 // Create a table
 pub fn create_table(conn: &Connection, table_name: &str) -> Result<()> {
     let create_query = format!(
@@ -134,3 +140,56 @@ pub fn update_table(
 
     Ok(())
 }
+
+pub fn do_all(
+    conn: &Connection,
+    url: &str,
+    table_name: &str,
+    file_path: &str,
+) -> Result<(), Box<dyn Error>> {
+    let start = Instant::now();
+    // Step 1: Extract the CSV from the URL
+    let response = get(url)?;
+    fs::create_dir_all("data")?;
+    fs::write(file_path, response.bytes()?)?;
+    println!("Data extracted from URL and saved to '{}'", file_path);
+
+    // Step 2: Load data into the table
+    create_table(conn, table_name)?;
+    load_data_from_csv(conn, table_name, file_path)?;
+    println!("Data loaded into '{}'", table_name);
+
+    // Step 3: Query data (read operation)
+    query_exec(conn, &format!("SELECT * FROM {}", table_name))?;
+
+    // Step 4: Insert a new row as a sample create operation
+    let insert_query = format!(
+        "INSERT INTO {} VALUES (2014, 11, 11, 1, 11);",
+        table_name
+    );
+    conn.execute(&insert_query, [])?;
+    println!("Sample row inserted into '{}'", table_name);
+
+    // Step 5: Update rows with a specified condition
+    let update_query = format!(
+        "UPDATE {} SET births = 1000 WHERE day_of_week = 1;",
+        table_name
+    );
+    conn.execute(&update_query, [])?;
+    println!("Updated rows in '{}' where day_of_week = 1", table_name);
+
+    // Step 6: Delete rows matching a specific condition
+    let delete_query = format!(
+        "DELETE FROM {} WHERE year = 2000;",
+        table_name
+    );
+    conn.execute(&delete_query, [])?;
+    println!("Deleted rows in '{}' where year = 2000", table_name);
+    let elapsed = start.elapsed();
+    println!("Function took: {:?}", elapsed);
+
+    Ok(())
+}
+
+
+
