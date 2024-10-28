@@ -1,45 +1,65 @@
-# Makefile for Rust Project
-
-
-all: check build format lint test
-
-check:
-	cargo check
-
-build:
-	cargo build
+rust-version:
+	@echo "Rust command-line utility versions:"
+	rustc --version 			#rust compiler
+	cargo --version 			#rust package manager
+	rustfmt --version			#rust code formatter
+	rustup --version			#rust toolchain manager
+	clippy-driver --version		#rust linter
 
 format:
-	cargo fmt
+	cargo fmt --quiet
+
+install:
+	# Install if needed
+	#@echo "Updating rust toolchain"
+	#rustup update stable
+	#rustup default stable 
 
 lint:
-	cargo clippy
+	cargo clippy --quiet
 
 test:
-	cargo test
+	cargo test --quiet
+
+run:
+	cargo run
 
 release:
 	cargo build --release
 
+all: format lint test run
 
-#Makefile for python 
-install:
+python_install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
 
-test:
+python_test:
 	python -m pytest -vv --cov=main --cov=mylib test_*.py
 
-format:	
+python_format:	
 	black *.py 
 
-lint:
+python_lint:
 	ruff check *.py mylib/*.py
 
-container-lint:
+python_container-lint:
 	docker run --rm -i hadolint/hadolint < Dockerfile
 
-refactor: format lint
+python_refactor: format lint
 
+python_deploy:
+	#deploy goes here
 		
-all: install lint test format 
+python_all: install lint test format deploy
+
+generate_and_push:
+	# Add, commit, and push the generated files to GitHub
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		git config --local user.email "action@github.com"; \
+		git config --local user.name "GitHub Action"; \
+		git add .; \
+		git commit -m "Add metric log"; \
+		git push; \
+	else \
+		echo "No changes to commit. Skipping commit and push."; \
+	fi

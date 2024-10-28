@@ -1,48 +1,36 @@
-name: Rust CI
-
+name: Rust CI/CD Pipeline
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
-
+    branches: [ "main" ]
+env:
+  CARGO_TERM_COLOR: always
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      WORKING_DIR: sqlite
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
-        override: true
-
-    - name: Check
-      run: make check
-      working-directory: ${{ env.WORKING_DIR }}
-
+          toolchain: stable
+          profile: minimal
+          components: clippy, rustfmt
+          override: true
+    - name: update linux
+      run: sudo apt update 
+    - name: update Rust
+      run: make install
+    - name: Check Rust versions
+      run: make rust-version
     - name: Format
       run: make format
-      working-directory: ${{ env.WORKING_DIR }}
-
+    - name: Lint
+      run: make lint
     - name: Test
       run: make test
-      working-directory: ${{ env.WORKING_DIR }}
-
-    - name: Release
-      run: make release
-      working-directory: ${{ env.WORKING_DIR }}
-
-    - name: Upload Binary Artifact
-      uses: actions/upload-artifact@v4 #v3 is scheduled for deprecation Nov 30 2024 check marketplace
-      with:
-        name: release-binary
-        path: ${{ env.WORKING_DIR }}/target/release/sqlite
+    - name: pull repository
+      run: git pull
+    # - name: add rust logs
+    #   run: make generate_and_push
+    
